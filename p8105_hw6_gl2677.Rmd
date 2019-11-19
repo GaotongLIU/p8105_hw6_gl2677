@@ -158,3 +158,22 @@ results = weather_df %>%
   unnest() %>% 
   mutate(log = log(beta_0*beta_1))
 ```
+
+```{r plot estimate}
+results %>% 
+  ggplot(aes(x = r_squared)) + 
+  geom_density() +
+  geom_vline(aes(xintercept = results %>% pull(r_squared) %>% quantile(probs = 0.025)),
+             linetype = "dashed") +
+  geom_vline(aes(xintercept = results %>% pull(r_squared) %>% quantile(probs = 0.975)),
+             linetype = "dashed")
+
+results %>% 
+  ggplot(aes(x = log)) + 
+  geom_density() +
+  geom_vline(aes(xintercept = results %>% pull(log) %>% quantile(probs = 0.025)),
+             linetype = "dashed") +
+  geom_vline(aes(xintercept = results %>% pull(log) %>% quantile(probs = 0.975)),
+             linetype = "dashed")
+```
+
