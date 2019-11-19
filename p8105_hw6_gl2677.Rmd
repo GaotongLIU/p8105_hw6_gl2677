@@ -177,3 +177,10 @@ results %>%
              linetype = "dashed")
 ```
 
+* The distribution of `r_squared` is nearly normal distribution with slight left skewness. The peak density is obtained when `r_squared` is approximately 0.91, and the range of `r_squared` is from 0.8697 to 0.9431.
+
+* The distribution of `log(beta_0*beta_1)` is nearly normal distribution and the peak density is obtained when `log(beta_0*beta_1)` is approximately 2.01, and the range of `r_squared` is from 1.918  to 2.106.
+
+* The 95% confidence interval for `r_squared`  is (`r results %>% pull(r_squared) %>% quantile(probs = 0.025) %>% round(digits = 3)`, `r results %>% pull(r_squared) %>% quantile(probs = 0.975) %>% round(digits = 3)`)
+
+* The 95% confidence interval for `log(beta_0*beta_1)`  is (`r results %>% pull(log) %>% quantile(probs = 0.025) %>% round(digits = 3)`, `r results %>% pull(log) %>% quantile(probs = 0.975) %>% round(digits = 3)`)
