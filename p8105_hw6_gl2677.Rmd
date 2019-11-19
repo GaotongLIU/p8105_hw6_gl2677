@@ -121,3 +121,5 @@ cv_df %>%
   mutate(model = fct_inorder(model)) %>%
   ggplot(aes(x = model, y = rmse)) + geom_violin()
 ```
+
+From the distribution of RMSE values for each candidate model. The variance in prediction error of fit1 is larggest, and that of fit2 and my_fit is quite similar. My fit model `bwt ~ babysex + blength + gaweeks + bhead` is the best among three models.
