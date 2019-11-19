@@ -37,3 +37,26 @@ birthweight = read_csv("data/birthweight.csv") %>%
          malform = as.factor(malform),
          mrace = as.factor(mrace))
 ```
+
+```{r fit regression, include=FALSE}
+full_fit = lm(bwt ~ babysex  + blength + gaweeks + 
+                   mheight + smoken + wtgain + fincome+ 
+                    delwt + malform + parity + 
+                bhead +frace + ppbmi + ppwt +
+                   menarche + momage + mrace  + 
+                pnumlbw + pnumsga ,
+            data = birthweight)
+anova(full_fit)
+initial_fit = lm(bwt ~ babysex + blength + gaweeks + 
+                    + bhead + mheight + smoken + wtgain +
+                   fincome + delwt + parity +frace + mrace,
+            data = birthweight)
+
+my_fit = lm(bwt ~ babysex + blength + gaweeks + bhead,
+            data = birthweight)
+
+summary(my_fit)
+summary(initial_fit)
+summary(full_fit)
+
+```
