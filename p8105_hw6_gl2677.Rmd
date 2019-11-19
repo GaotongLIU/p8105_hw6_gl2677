@@ -60,3 +60,24 @@ summary(initial_fit)
 summary(full_fit)
 
 ```
+
+
+```{r  residual plot}
+my_fit = lm(bwt ~ babysex + blength + gaweeks + bhead,
+            data = birthweight)
+birthweight %>% 
+  add_residuals(my_fit) %>% 
+  add_predictions(my_fit) %>% 
+  ggplot(aes(x = pred, y = resid)) +
+  geom_point() +
+  geom_line(aes(y = 0),  color = "red")
+  
+birthweight %>% 
+  add_residuals(initial_fit) %>% 
+  add_predictions(initial_fit) %>% 
+  ggplot(aes(x = pred, y = resid)) +
+  geom_point() +
+  geom_line(aes(y = 0),  color = "red")
+```
+
+Firsty I used anava Global F test to find the predictors with significant effect on the birthweight. 12 variables show the significance. Then base on the common sense, and to make the model simpler, I only choose 4 variables which are highly associated with the birthweight. The model I use only contain the main effect of  the baby's sex, baby’s length at birth, baby’s head circumference at birth (centimeters) and gestational age in weeks.
