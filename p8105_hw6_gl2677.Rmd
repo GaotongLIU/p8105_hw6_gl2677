@@ -35,62 +35,46 @@ birthweight = read_csv("data/birthweight.csv") %>%
   mutate(babysex = as.factor(babysex),
          frace  = as.factor(frace),
          malform = as.factor(malform),
-         mrace = as.factor(mrace))
+         mrace = as.factor(mrace)) %>% 
+  mutate(babysex = fct_infreq(babysex),
+         frace  = fct_infreq(frace),
+         malform = fct_infreq(malform),
+         mrace = fct_infreq(mrace))
 ```
 
 ```{r fit regression, include=FALSE}
-full_fit = lm(bwt ~ babysex  + blength + gaweeks + 
-                   mheight + smoken + wtgain + fincome+ 
-                    delwt + malform + parity + 
-                bhead +frace + ppbmi + ppwt +
-                   menarche + momage + mrace  + 
-                pnumlbw + pnumsga ,
-            data = birthweight)
-anova(full_fit)
-initial_fit = lm(bwt ~ babysex + blength + gaweeks + 
-                    + bhead + mheight + smoken + wtgain +
-                   fincome + delwt + parity +frace + mrace,
-            data = birthweight)
-
-my_fit = lm(bwt ~ babysex + blength + gaweeks + bhead,
-            data = birthweight)
-
-summary(my_fit)
-summary(initial_fit)
+full_fit = lm(bwt ~ ., data = birthweight)
 summary(full_fit)
-
+my_fit = lm(bwt ~ babysex + blength + gaweeks + bhead 
+            + delwt + smoken ,
+            data = birthweight)
+summary(my_fit)
 ```
 
 
 ```{r  residual plot}
-my_fit = lm(bwt ~ babysex + blength + gaweeks + bhead,
+my_fit = lm(bwt ~ babysex + blength + gaweeks + bhead 
+            + delwt + smoken ,
             data = birthweight)
+
 birthweight %>% 
   add_residuals(my_fit) %>% 
   add_predictions(my_fit) %>% 
   ggplot(aes(x = pred, y = resid)) +
   geom_point() +
-  geom_line(aes(y = 0),  color = "red")
-  
-birthweight %>% 
-  add_residuals(initial_fit) %>% 
-  add_predictions(initial_fit) %>% 
-  ggplot(aes(x = pred, y = resid)) +
-  geom_point() +
-  geom_line(aes(y = 0),  color = "red")
+  geom_line(aes(y = 0),  color = "red") +
+  labs(x = "fitted value",
+       y = "residual",
+       title = "Residuals against fitted values")
 ```
 
-Firsty I used anava Global F test to find the predictors with significant effect on the birthweight. 12 variables show the significance. Then base on the common sense, and to make the model simpler, I only choose 4 variables which are highly associated with the birthweight. The model I use only contain the main effect of  the baby's sex, baby’s length at birth, baby’s head circumference at birth (centimeters) and gestational age in weeks.
+Firsty I used all predictors to fit the regression, than I remove the predictors which are non-significant. 8 variables show the highest significance and I use them to fit the final regression. The model I use only contain the main effect of  the baby's sex, baby’s length at birth, baby’s head circumference at birth (centimeters), gestational age in weeks, mother’s weight at delivery (pounds) and average number of cigarettes smoked per day during pregnancy. 
 
-```{r 2 models}
-fit1 = lm(bwt ~ blength + gaweeks, data = birthweight)
-fit2 = lm(bwt ~ bhead * blength * babysex, data = birthweight)
-
-```
+The residual plot shows the residuals roughly even distribute around zero, but there are more variance when the fitted values increase.
 
 ```{r cross validation}
 cv_df = 
-  crossv_mc(birthweight, 100, test = 0.2) %>%
+  crossv_mc(birthweight, 5000, test = 0.2) %>%
   mutate(
     train = map(train, as_tibble),
     test = map(test, as_tibble)) %>% 
@@ -99,7 +83,7 @@ cv_df =
                                      data = .x)),
     fit2_model = map(.x = train, ~lm(bwt ~ bhead * blength * babysex, 
                                      data = .x)),
-    my_fit_model = map(.x = train, ~lm(bwt ~ babysex + blength + gaweeks + bhead,
+    my_fit_model = map(.x = train, ~lm(bwt ~ babysex + blength + gaweeks + bhead + delwt + smoken,
                                      data = .x))
     ) %>% 
     mutate(
@@ -119,10 +103,12 @@ cv_df %>%
     values_to = "rmse",
     names_prefix = "rmse_") %>%
   mutate(model = fct_inorder(model)) %>%
-  ggplot(aes(x = model, y = rmse)) + geom_violin()
+  ggplot(aes(x = model, y = rmse)) + 
+  geom_violin() + 
+  labs(title = "Distribution of root mean squared errors(rmse) against different models")
 ```
 
-From the distribution of RMSE values for each candidate model. The variance in prediction error of fit1 is larggest, and that of fit2 and my_fit is quite similar. My fit model `bwt ~ babysex + blength + gaweeks + bhead` is the best among three models.
+From the distribution of RMSE values for each candidate model, the variance in prediction error of fit1 (`bwt ~ blength + gaweeks`) is larggest, and that of fit2(`bwt ~ bhead * blength * babysex`) and my_fit is quite similar. My fit model `bwt ~ babysex + blength + gaweeks + bhead + delwt + smoken` is the best among three models.
 
 ## Problem 2
 ```{r load weathrer data}
@@ -166,7 +152,9 @@ results %>%
   geom_vline(aes(xintercept = results %>% pull(r_squared) %>% quantile(probs = 0.025)),
              linetype = "dashed") +
   geom_vline(aes(xintercept = results %>% pull(r_squared) %>% quantile(probs = 0.975)),
-             linetype = "dashed")
+             linetype = "dashed") +
+  labs(title = "Distribution of estimate R squared", 
+       subtitle = "with 2.5% and 97.5% quantiles")
 
 results %>% 
   ggplot(aes(x = log)) + 
@@ -174,7 +162,10 @@ results %>%
   geom_vline(aes(xintercept = results %>% pull(log) %>% quantile(probs = 0.025)),
              linetype = "dashed") +
   geom_vline(aes(xintercept = results %>% pull(log) %>% quantile(probs = 0.975)),
-             linetype = "dashed")
+             linetype = "dashed") +
+  labs(title = "Distribution of estimate log(beta_0 * beta_1)", 
+       subtitle = "with 2.5% and 97.5% quantiles",
+       x = "log(beta_0 * beta_1)")
 ```
 
 * The distribution of `r_squared` is nearly normal distribution with slight left skewness. The peak density is obtained when `r_squared` is approximately 0.91, and the range of `r_squared` is from 0.8697 to 0.9431.
