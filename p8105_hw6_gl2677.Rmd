@@ -45,6 +45,7 @@ birthweight = read_csv("data/birthweight.csv") %>%
 ```{r fit regression, include=FALSE}
 full_fit = lm(bwt ~ ., data = birthweight)
 summary(full_fit)
+anova(full_fit)
 my_fit = lm(bwt ~ babysex + blength + gaweeks + bhead 
             + delwt + smoken ,
             data = birthweight)
@@ -62,15 +63,18 @@ birthweight %>%
   add_predictions(my_fit) %>% 
   ggplot(aes(x = pred, y = resid)) +
   geom_point() +
-  geom_line(aes(y = 0),  color = "red") +
+  geom_line(aes(y = 0),  color = "gray") +
+  geom_smooth(method =  lm, se  = FALSE, linetype = "dashed") + 
   labs(x = "fitted value",
        y = "residual",
        title = "Residuals against fitted values")
+
 ```
 
-Firsty I used all predictors to fit the regression, than I remove the predictors which are non-significant. 8 variables show the highest significance and I use them to fit the final regression. The model I use only contain the main effect of  the baby's sex, baby’s length at birth, baby’s head circumference at birth (centimeters), gestational age in weeks, mother’s weight at delivery (pounds) and average number of cigarettes smoked per day during pregnancy. 
+Firstly I used all predictors to fit the regression, then I remove the predictors which are non-significant. 6 variables show the highest significance and I use them to fit the final regression. The model I use only contains the main effect of the baby’s sex, baby’s length at birth, baby’s head circumference at birth (centimeters), gestational age in weeks, mother’s weight at delivery (pounds) and average number of cigarettes smoked per day during pregnancy.
 
-The residual plot shows the residuals roughly even distribute around zero, but there are more variance when the fitted values increase.
+The residual plot shows the residuals bounce around zero, but there is more variance when the fitted values increase.
+
 
 ```{r cross validation}
 cv_df = 
@@ -168,9 +172,9 @@ results %>%
        x = "log(beta_0 * beta_1)")
 ```
 
-* The distribution of `r_squared` is nearly normal distribution with slight left skewness. The peak density is obtained when `r_squared` is approximately 0.91, and the range of `r_squared` is from 0.8697 to 0.9431.
+* The distribution of `r_squared` is a nearly normal distribution with slight left skewness. The peak density is obtained when `r_squared` is approximately 0.91, and the range of `r_squared` is from 0.8697 to 0.9431.
 
-* The distribution of `log(beta_0*beta_1)` is nearly normal distribution and the peak density is obtained when `log(beta_0*beta_1)` is approximately 2.01, and the range of `r_squared` is from 1.918  to 2.106.
+* The distribution of `log(beta_0*beta_1)` is a nearly normal distribution and the peak density is obtained when `log(beta_0*beta_1)` is approximately 2.01, and the range of `r_squared` is from 1.918  to 2.106.
 
 * The 95% confidence interval for `r_squared`  is (`r results %>% pull(r_squared) %>% quantile(probs = 0.025) %>% round(digits = 3)`, `r results %>% pull(r_squared) %>% quantile(probs = 0.975) %>% round(digits = 3)`)
 
