@@ -78,7 +78,7 @@ The residual plot shows the residuals bounce around zero, but there is more vari
 
 ```{r cross validation}
 cv_df = 
-  crossv_mc(birthweight, 5000, test = 0.2) %>%
+  crossv_mc(birthweight, 100, test = 0.2) %>%
   mutate(
     train = map(train, as_tibble),
     test = map(test, as_tibble)) %>% 
